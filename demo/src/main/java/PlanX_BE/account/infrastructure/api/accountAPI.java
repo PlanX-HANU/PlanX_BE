@@ -1,6 +1,7 @@
 package PlanX_BE.account.infrastructure.api;
 
 import PlanX_BE.account.domain.model.LoginRequest;
+import PlanX_BE.account.domain.model.ResponseModel;
 import PlanX_BE.account.domain.service.accountService;
 import PlanX_BE.account.infrastructure.repository_implement.accountEntity;
 import PlanX_BE.share.domain.exception.DomainException;
@@ -25,7 +26,7 @@ public class accountAPI {
         @GetMapping("/login")
         public ResponseEntity<ResponseBody> login(@RequestBody LoginRequest request){
             try{
-                Result<accountEntity, DomainException> result = accountService.login(request);
+                Result<ResponseModel, DomainException> result = accountService.login(request);
                 if(result.isFailed()){
                     return ResponseBodyFactory.badRequest(new ValidateException("Thông tin đăng nhập không đúng"));
                 }
