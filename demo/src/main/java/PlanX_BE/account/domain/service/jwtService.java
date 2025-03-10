@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
+
+
 @Service
 public class jwtService {
-    @Value("${jwt.secret_key}")
-    private String secretKey;
+
+    private String secretKey ="PlanX";
 
     public Result<String , DomainException> generateToken(double ttlInHours, accountEntity account){
         try{
