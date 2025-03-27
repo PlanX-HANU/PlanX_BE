@@ -11,8 +11,10 @@ import PlanX_BE.share.domain.exception.NotFoundException;
 import PlanX_BE.share.domain.exception.ValidateException;
 import PlanX_BE.share.domain.model.Result;
 import PlanX_BE.share.domain.service.EncryptionService;
+
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class accountService {
+
+
 
     @Autowired
     private final accountRepositoryInterface repositoryInterface;
@@ -83,14 +87,38 @@ public class accountService {
             try {
                 Result<accountEntity, NotFoundException> result = repositoryInterface.getAccountByEmail(email);
                 if(result.isFailed()){
-                    return Result.success(result.getSuccessData());
+                    return Result.failed(result.getFailedData());
                 }
                 else {
-                    return Result.failed(result.getFailedData());
+
+                    return Result.success(result.getSuccessData());
                 }
             }
             catch (Exception e) {
                 return Result.failed(new NotFoundException("INTERNAL_ERROR"));
+            }
+
+        }
+
+        public Result<String,NotFoundException> forgetPassword(String email ){
+            try{
+                Result<accountEntity,NotFoundException> result = getAccountByEmail(email);
+                if(result.isFailed()){
+                    return Result.failed(result.getFailedData());
+                }
+                else{
+                    Result<String ,DomainException> newPassword = encryptionService.encryption(result.getSuccessData().getPassword());
+                    result.getSuccessData().setPassword(newPassword.getSuccessData());
+                    Result<accountEntity,NotFoundException> changingPassword = repositoryInterface.changePassword(email, newPassword.getSuccessData());
+                    if(changingPassword.isFailed()){
+                        return Result.failed(new NotFoundException(""));
+                    }
+                    else{
+                        return Result.success(newPassword.getSuccessData());
+                    }
+                }
+            } catch (Exception e) {
+                return Result.failed(new NotFoundException(""));
             }
 
         }

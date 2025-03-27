@@ -1,14 +1,13 @@
 package PlanX_BE.account.domain.service;
 
-import PlanX_BE.account.domain.model.ACCOUNT_ROLE;
 import PlanX_BE.account.domain.model.ResponseModel;
 import PlanX_BE.account.infrastructure.repository_implement.accountEntity;
 import PlanX_BE.share.domain.exception.DomainException;
 import PlanX_BE.share.domain.exception.ValidateException;
 import PlanX_BE.share.domain.model.Result;
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 
 import java.util.Date;
 import java.util.HashMap;
@@ -17,13 +16,13 @@ import java.util.HashMap;
 @Service
 public class jwtService {
 
-    private String secretKey ="PlanX";
+private final String key ="PlanXsudaisdhaisdausidhasiufsdfsdjiaosdjiasdjasiodhasodasoidasoidadasijdaosjaisdjasdasodasasiodasjodjsaiodasodjasoida";
 
     public Result<String , DomainException> generateToken(double ttlInHours, accountEntity account){
         try{
             HashMap<String, Object> claims = new HashMap<>();
             claims.put("sessionId",account.getAccountID());
-            claims.put("role",account.getRole());
+            claims.put("role",account.getRole().toString());
             Result<String ,Boolean> token = createToken(claims, ttlInHours);
             if(token.isFailed()){
                 return Result.failed(new DomainException("","INTERNAL_ERROR"));
@@ -40,11 +39,11 @@ public class jwtService {
         try {
             String token = Jwts.builder()
                     .setClaims(claims)
-                    .setIssuer(secretKey)
+                    .setIssuer("PlanX")
 
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date((long) (System.currentTimeMillis() + 1000 * 60 * 60 * ttlInHours)))
-                    .signWith(SignatureAlgorithm.HS256, secretKey)
+                    .signWith(SignatureAlgorithm.HS384,key)
                     .compact();
             return Result.success(token);
         }
@@ -52,27 +51,30 @@ public class jwtService {
             return Result.failed(false);
         }
     }
-    public Result< String, ValidateException> tokenValidator(String token){
+    public Result<String, ValidateException> tokenValidator(String token){
         try {
             Claims claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
                     .parseClaimsJws(token)
                     .getBody();
-            if(claims.getIssuer()==null||claims.getSubject()==null){
+
+            if (claims.getIssuer() == null || claims.getSubject() == null) {
                 return Result.failed(new ValidateException("INVALID_TOKEN"));
             }
             return Result.success(claims.get("role", String.class));
         }
-        catch(ExpiredJwtException e){
+        catch (ExpiredJwtException e) {
             return Result.failed(new ValidateException("TOKEN_TIME_OUT"));
         }
-        catch (SignatureException e){
+        catch (SignatureException e) {
             return Result.failed(new ValidateException("INVALID_SIGNATURE"));
         }
-        catch (Exception e){
+        catch (Exception e) {
             return Result.failed(new ValidateException("INVALID_TOKEN"));
         }
-
     }
+
     public Result<ResponseModel, DomainException> createResponseModel(accountEntity account ){
         try{
             Result<String, DomainException> firstAccessToken = generateToken(0.25,account);
@@ -94,25 +96,25 @@ public class jwtService {
 
 
 
-    public Result<String, ValidateException> extractFromToken(String token , String subject){
-        try{
-            Claims claims = Jwts.parser()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            String sessionID = claims.get("sessionId" , String.class);
-            ACCOUNT_ROLE role =claims.get("role", ACCOUNT_ROLE.class);
-            if(subject.equals("sessionID")){
-                return Result.success(sessionID);
-            } else if (subject.equals("role")) {
-                return Result.success(role.toString());
-            }
-            else {
-                return Result.failed(new ValidateException("NO_IDENTIFIER"));
-            }
-        }
-        catch (Exception e){
-            return Result.failed(new ValidateException("INVALID_TOKEN"));
-        }
-    }
+//    public Result<String, ValidateException> extractFromToken(String token , String subject){
+//        try{
+//            Claims claims = Jwts.parser()
+//                    .parseClaimsJws(token)
+//                    .getBody();
+//
+//            String sessionID = claims.get("sessionId" , String.class);
+//            ACCOUNT_ROLE role =claims.get("role", ACCOUNT_ROLE.class);
+//            if(subject.equals("sessionID")){
+//                return Result.success(sessionID);
+//            } else if (subject.equals("role")) {
+//                return Result.success(role.toString());
+//            }
+//            else {
+//                return Result.failed(new ValidateException("NO_IDENTIFIER"));
+//            }
+//        }
+//        catch (Exception e){
+//            return Result.failed(new ValidateException("INVALID_TOKEN"));
+//        }
+//    }
 }

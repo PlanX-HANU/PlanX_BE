@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -54,6 +55,18 @@ public class accountRepository implements accountRepositoryInterface {
         }
     }
 
+    public Result<accountEntity,NotFoundException> changePassword(String email , String newPassword){
+        try{
+            Query query = new Query(Criteria.where("email").is(email));
+            Update update = new Update();
+            update.set("password",newPassword);
+            accountEntity account = mongoTemplate.findAndModify(query,update, accountEntity.class);
+            return Result.success(account);
+        }
+        catch (Exception e){
+            return Result.failed(new NotFoundException("Not Found"));
+        }
+    }
 
     public Result<accountEntity, DomainException> deleteAccount(String email){
         try{

@@ -8,7 +8,7 @@ import PlanX_BE.share.domain.model.Result;
 import PlanX_BE.share.domain.service.EncryptionService;
 import lombok.Builder;
 import lombok.Data;
-import org.bson.types.ObjectId;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 @Builder
 @Data
 public class accountEntity {
-    private final ObjectId accountID;
+    private final String accountID;
     private final String email;
-    private final String password;
+    private  String password;
     private final LocalDateTime createdDate;
     private final ACCOUNT_ROLE role;
 
